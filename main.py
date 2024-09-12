@@ -24,7 +24,8 @@ file1.write("1" * 2)
 print(file1.read())
 
 file3.write("5" * 10)
-print(file3.read())
+file3.delete() # deleta o arquivo
+print(file3.read()) # essa linha não é mais impressa
 
 file1.close(principal_memory)
 file2.close(principal_memory)
