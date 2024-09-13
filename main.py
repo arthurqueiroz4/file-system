@@ -2,7 +2,7 @@
 # os arquivos que foram abertos
 from datetime import datetime
 from typing import Union
-from file_system import Disk, PrincipalMemory, Directory  # Certifique-se de que estas classes estão no arquivo file_system.py
+from model import Disk, PrincipalMemory, Directory
 
 def main():
     # Inicializa o disco (simulado)
