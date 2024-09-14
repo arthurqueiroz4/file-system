@@ -65,7 +65,12 @@ def main():
         print("Conteúdo do arquivo após a escrita:", file.read())  # Lê o conteúdo do arquivo
         file.write(" Adicionando mais dados.")  # Escreve mais dados
         print("Conteúdo do arquivo após mais escrita:", file.read())  # Lê o novo conteúdo
-        file.close(pm)  # Fecha o arquivo
+        print(f"Blocos usados por arquivo2.txt: {file.index_node.pointers}")
+
+    # Listando arquivos na memória principal
+    print("\n=== Arquivos na Memória Principal ===")
+    pm.list()  # Lista todos os arquivos abertos na memória
+    file.close(pm)  # Fecha o arquivo
 
     # Listando arquivos na memória principal
     print("\n=== Arquivos na Memória Principal ===")
@@ -74,8 +79,19 @@ def main():
     # Testando a exclusão de arquivos
     print("\n=== Excluindo 'arquivo2.txt' ===")
     if file:
-        file.delete()  # Deleta o arquivo e libera os blocos de dados
+        file.delete(root)  # Deleta o arquivo e libera os blocos de dados
         root.list_contents()  # "arquivo2.txt" deve ser removido do diretório raiz
+
+    # Testando a alocação dos blocos
+    print("\n=== Mostrando Blocos do Novo Arquivo ===")
+    root.create_file("arquivo4.txt", "usuario2", disk)
+    file = root.files.get("arquivo4.txt")
+    if file:
+        file.open(pm)  # Abre o arquivo e adiciona na memória principal
+        file.write("O arquivo4.txt criado agora.")  # Escreve no arquivo
+        print("Conteúdo do arquivo após a escrita:", file.read())  # Lê o conteúdo do arquivo
+        print(f"Blocos usados por arquivo4.txt: {file.index_node.pointers}")
+
 
 if __name__ == "__main__":
     main()
