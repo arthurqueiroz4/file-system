@@ -9,6 +9,7 @@ class Disk():
         self.length: int = 0
         self.length_max = 100000
         self.blocks: list[str] = [''] * self.length_max
+        self.free_blocks: list[int] = []  # Lista de blocos livres
 
     def store(self, data: str) -> int:
         """
@@ -20,15 +21,32 @@ class Disk():
         Returns:
             int: Índice inicial no disco onde os dados foram armazenados.
         """
-        len_before_appending = self.length
-        if self.length == self.length_max:
+        if self.length == self.length_max and not self.free_blocks:
             raise Exception("Disk papocou")
-        for char in data:
-            self.blocks[self.length] = char
-            self.length += 1
 
-        self.length += BLOCK_LEN - self.length % BLOCK_LEN
-        return len_before_appending
+        indices_to_use = []
+
+        # Primeiro, utiliza blocos livres
+        for char in data:
+            if self.free_blocks:
+                block_index = self.free_blocks.pop(0)
+            else:
+                block_index = self.length
+                self.length += 1
+            self.blocks[block_index] = char
+            indices_to_use.append(block_index)
+
+        # Preenche com blocos vazios até completar o tamanho de bloco definido
+        while len(indices_to_use) % BLOCK_LEN != 0:
+            if self.free_blocks:
+                block_index = self.free_blocks.pop(0)
+            else:
+                block_index = self.length
+                self.length += 1
+            self.blocks[block_index] = ''  # Bloco preenchido vazio
+            indices_to_use.append(block_index)
+
+        return indices_to_use[0]
  
     def get(self, index) -> str:
         """
@@ -52,6 +70,7 @@ class Disk():
         """
         for i in range(index, index + length):
             self.blocks[i] = ''
+            self.free_blocks.append(i)  # Adiciona o índice do bloco à lista de blocos livres
 
 
 class IndexNode():
@@ -89,7 +108,7 @@ class PrincipalMemory():
 
     def list(self):
         """Lista todos os arquivos atualmente na memória principal."""
-        [print(file) for file in self.files]
+        [print(file.name) for file in self.files]
 
 
 class File():
@@ -121,12 +140,13 @@ class File():
         pm.put(self)
         self.is_open = True
 
-    def delete(self):
+    def delete(self, directory):
         """Deleta o arquivo, liberando os blocos de dados do disco e limpando o i-node."""
         for pointer in self.index_node.pointers:
             self.disk.release(pointer, BLOCK_LEN)
         self.index_node.pointers.clear()
         self.index_node.length = 0
+        del directory.files[self.name]  # Remove o arquivo do diretório
         print(f"Arquivo {self.name} deletado com sucesso.")
 
     def close(self, pm: PrincipalMemory):
